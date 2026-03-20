@@ -47,6 +47,7 @@ export default function RegisterPage() {
         router.push("/login");
       } else {
         localStorage.setItem("token", resData.token);
+        localStorage.setItem("user", JSON.stringify(resData.user));
         router.push("/dashboard");
       }
     } catch (err: any) {

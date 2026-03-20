@@ -34,8 +34,9 @@ export default function LoginPage() {
         throw new Error(data.message || "Login failed");
       }
       
-      // Store token (in a real app, use HTTP-only cookies or NextAuth)
+      // Store token and user data
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
       
       // Redirect to dashboard
       router.push("/dashboard");
