@@ -18,10 +18,24 @@ export interface IUser extends Document {
   profile?: {
     basics: { name: string; email: string; targetRole: string };
     skills: { manual: string[]; aiSuggested: string[]; approved: string[] };
-    projects: { rawInput: string; aiEnhanced: string; approved: boolean }[];
-    experience: { rawInput: string; aiEnhanced: string; approved: boolean }[];
+    projects: {
+      rawInput: string;
+      aiEnhanced: string;
+      approved: boolean;
+      extractedSkills: string[];
+      projectSummary: string;
+      suggestedRoles: string[];
+    }[];
+    experience: {
+      rawInput: string;
+      aiEnhanced: string;
+      approved: boolean;
+      extractedSkills: string[];
+      suggestedTitle: string;
+    }[];
     summary: string;
     roleRecommendations: string[];
+    suggestedSkills: string[];
     completionScore: number;
     onboardingCompleted: boolean;
   };
@@ -89,6 +103,9 @@ const UserSchema = new Schema<IUser>(
           rawInput: { type: String, default: "" },
           aiEnhanced: { type: String, default: "" },
           approved: { type: Boolean, default: false },
+          extractedSkills: [{ type: String }],
+          projectSummary: { type: String, default: "" },
+          suggestedRoles: [{ type: String }],
         },
       ],
       experience: [
@@ -96,10 +113,13 @@ const UserSchema = new Schema<IUser>(
           rawInput: { type: String, default: "" },
           aiEnhanced: { type: String, default: "" },
           approved: { type: Boolean, default: false },
+          extractedSkills: [{ type: String }],
+          suggestedTitle: { type: String, default: "" },
         },
       ],
       summary: { type: String, default: "" },
       roleRecommendations: [{ type: String }],
+      suggestedSkills: [{ type: String }],
       completionScore: { type: Number, default: 0 },
       onboardingCompleted: { type: Boolean, default: false },
     },

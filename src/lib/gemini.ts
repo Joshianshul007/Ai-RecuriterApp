@@ -7,7 +7,7 @@ async function callGemini(prompt: string, retries = 3): Promise<string> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash-lite",
         contents: prompt,
       });
       return response.text?.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim() || "{}";
@@ -16,14 +16,12 @@ async function callGemini(prompt: string, retries = 3): Promise<string> {
       const isRateLimit = status === 429 || error?.message?.includes("429");
 
       if (isRateLimit && attempt < retries) {
-        // Exponential backoff: wait 2s, 4s, 8s...
-        const waitMs = Math.pow(2, attempt) * 1000;
-        console.log(`[GEMINI] Rate limited. Retrying in ${waitMs / 1000}s (attempt ${attempt}/${retries})...`);
+        const waitMs = attempt === 1 ? 5000 : attempt === 2 ? 15000 : 30000;
+        console.log(`[GEMINI] Rate limited. Waiting ${waitMs / 1000}s... (attempt ${attempt}/${retries})`);
         await new Promise((resolve) => setTimeout(resolve, waitMs));
         continue;
       }
 
-      // Re-throw on final attempt or non-retryable errors
       throw error;
     }
   }
@@ -31,14 +29,22 @@ async function callGemini(prompt: string, retries = 3): Promise<string> {
 }
 
 // ─── Enhance Project ─────────────────────────────────────
-export async function enhanceProject(rawInput: string) {
+export async function enhanceProject(
+  rawInput: string,
+  existingSkills: string[] = []
+) {
+  const contextLine =
+    existingSkills.length > 0
+      ? `\nThe candidate already has these skills: ${existingSkills.join(", ")}. Focus on extracting NEW skills not already listed.\n`
+      : "";
+
   const prompt = `You are a professional resume writer and technical recruiter. A job seeker described a project they worked on. Your job is to:
 
 1. Rewrite the project description in a professional, structured format (2-3 sentences max).
 2. Extract all relevant technical skills used or implied.
 3. Write a one-line summary of the project.
 4. Suggest 3 matching job roles for someone with this project experience.
-
+${contextLine}
 User input: "${rawInput}"
 
 Respond ONLY in valid JSON (no markdown, no code fences):
@@ -54,13 +60,21 @@ Respond ONLY in valid JSON (no markdown, no code fences):
 }
 
 // ─── Enhance Experience ──────────────────────────────────
-export async function enhanceExperience(rawInput: string) {
+export async function enhanceExperience(
+  rawInput: string,
+  existingSkills: string[] = []
+) {
+  const contextLine =
+    existingSkills.length > 0
+      ? `\nThe candidate already has these skills: ${existingSkills.join(", ")}. Focus on extracting NEW skills not already listed.\n`
+      : "";
+
   const prompt = `You are a professional resume writer. A job seeker described their work experience in simple language. Your job is to:
 
 1. Rewrite it in a professional format with bullet points covering key responsibilities and achievements.
 2. Extract relevant skills from the experience.
 3. Suggest a professional job title that matches this experience.
-
+${contextLine}
 User input: "${rawInput}"
 
 Respond ONLY in valid JSON (no markdown, no code fences):
@@ -78,8 +92,14 @@ Respond ONLY in valid JSON (no markdown, no code fences):
 export async function generateProfileSummary(
   skills: string[],
   projects: string[],
-  experiences: string[]
+  experiences: string[],
+  existingRoles: string[] = []
 ) {
+  const rolesContext =
+    existingRoles.length > 0
+      ? `\nPreviously suggested roles: ${existingRoles.join(", ")}. Build on these but also suggest new opportunities.\n`
+      : "";
+
   const prompt = `You are a professional resume writer. Based on the following candidate data, generate:
 
 1. A professional summary paragraph (3-4 sentences, first-person).
@@ -89,7 +109,7 @@ export async function generateProfileSummary(
 Skills: ${skills.join(", ")}
 Projects: ${projects.join(" | ")}
 Experiences: ${experiences.join(" | ")}
-
+${rolesContext}
 Respond ONLY in valid JSON (no markdown, no code fences):
 {
   "summary": "...",

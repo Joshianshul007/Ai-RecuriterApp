@@ -15,6 +15,15 @@ import { Progress } from "@/components/ui/progress";
 
 export default function DashboardPage() {
   const [firstName, setFirstName] = useState("User");
+  const [profileCompletion, setProfileCompletion] = useState(0);
+  const [missingSections, setMissingSections] = useState([
+    { name: "Add Skills", isComplete: false },
+    { name: "Add Projects", isComplete: false },
+    { name: "Add Experience", isComplete: false },
+    { name: "Add Summary", isComplete: false },
+  ]);
+  const [suggestedRoles, setSuggestedRoles] = useState<string[]>([]);
+  const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
 
   useEffect(() => {
     // 1. Optimistic load
@@ -29,30 +38,46 @@ export default function DashboardPage() {
     // 2. Network verification fallback
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("/api/v1/auth/me", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.user) {
-          setFirstName(data.user.firstName);
-          localStorage.setItem("user", JSON.stringify(data.user));
+      Promise.all([
+        fetch("/api/v1/auth/me", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/v1/users/profile", { headers: { Authorization: `Bearer ${token}` } })
+      ])
+      .then(async ([userRes, profileRes]) => {
+        const userData = await userRes.json();
+        const profileData = await profileRes.json();
+
+        if (userData.success && userData.user) {
+          setFirstName(userData.user.firstName);
+          localStorage.setItem("user", JSON.stringify(userData.user));
+        }
+
+        if (profileData.success && profileData.profile) {
+          const p = profileData.profile;
+          
+          const hasSkills = p.skills?.approved?.length > 0;
+          const hasProjects = p.projects?.length > 0;
+          const hasExperience = p.experience?.length > 0;
+          const hasSummary = !!p.summary;
+
+          const completeCount = [hasSkills, hasProjects, hasExperience, hasSummary].filter(Boolean).length;
+          setProfileCompletion(completeCount * 25);
+          
+          setMissingSections([
+            { name: "Add Skills", isComplete: hasSkills },
+            { name: "Add Projects", isComplete: hasProjects },
+            { name: "Add Experience", isComplete: hasExperience },
+            { name: "Add Summary", isComplete: hasSummary },
+          ]);
+
+          if (p.roleRecommendations) setSuggestedRoles(p.roleRecommendations);
+          if (p.suggestedSkills) setSuggestedSkills(p.suggestedSkills);
         }
       })
       .catch(console.error);
     }
   }, []);
 
-  // Mock data for UI development
-  const profileCompletion = 45;
-  const missingSections = [
-    { name: "Add Projects", isComplete: false },
-    { name: "Add Experience", isComplete: false },
-    { name: "Basic Details", isComplete: true },
-  ];
-  
-  const suggestedRoles = ["Backend Developer", "Machine Learning Engineer", "Data Scientist"];
-  const suggestedSkills = ["Node.js", "Python", "MongoDB", "TensorFlow"];
+
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -148,11 +173,15 @@ export default function DashboardPage() {
                   Top Matching Roles
                 </h3>
                 <div className="space-y-2">
-                  {suggestedRoles.map(role => (
-                    <div key={role} className="bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-white/90">
-                      {role}
-                    </div>
-                  ))}
+                  {suggestedRoles.length > 0 ? (
+                    suggestedRoles.map(role => (
+                      <div key={role} className="bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-white/90">
+                        {role}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-white/40 text-sm italic">Generate a profile summary to see roles.</div>
+                  )}
                 </div>
               </div>
 
@@ -163,12 +192,16 @@ export default function DashboardPage() {
                   Skills to Add
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {suggestedSkills.map(skill => (
-                    <button key={skill} className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/20 rounded-full px-3 py-1 text-xs transition-colors flex items-center gap-1">
-                      <Plus className="w-3 h-3" />
-                      {skill}
-                    </button>
-                  ))}
+                  {suggestedSkills.length > 0 ? (
+                    suggestedSkills.map(skill => (
+                      <button key={skill} className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/20 rounded-full px-3 py-1 text-xs transition-colors flex items-center gap-1">
+                        <Plus className="w-3 h-3" />
+                        {skill}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="text-white/40 text-sm italic">Generate a profile summary to see skills.</div>
+                  )}
                 </div>
               </div>
             </div>
