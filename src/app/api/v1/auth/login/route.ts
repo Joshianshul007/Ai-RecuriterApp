@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
+import HrRecruiter from "@/models/HrRecruiter";
 import type { LoginBody, AuthResponse } from "@/types/auth";
 import jwt from "jsonwebtoken";
 
@@ -23,12 +24,19 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Find user and explicitly select password ──────────
-    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+    let user = await (User.findOne({ email: email.toLowerCase() }) as any).select("+password");
+    let isHr = false;
+
     if (!user) {
-      return NextResponse.json<AuthResponse>(
-        { success: false, message: "Invalid email or password" },
-        { status: 401 }
-      );
+      // Check HrRecruiter collection
+      user = await (HrRecruiter.findOne({ email: email.toLowerCase() }) as any).select("+password");
+      if (!user) {
+        return NextResponse.json<AuthResponse>(
+          { success: false, message: "Invalid email or password" },
+          { status: 401 }
+        );
+      }
+      isHr = true;
     }
 
     // ── Verify password ───────────────────────────────────
@@ -42,7 +50,11 @@ export async function POST(request: NextRequest) {
 
     // ── Issue JWT ─────────────────────────────────────────
     const token = jwt.sign(
-      { id: user._id.toString(), email: user.email, role: user.role },
+      { 
+        id: user._id.toString(), 
+        email: user.email, 
+        role: isHr ? "employer" : user.role // Force employer role if in Hr collection
+      },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
     );
@@ -57,7 +69,7 @@ export async function POST(request: NextRequest) {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          role: user.role,
+          role: isHr ? "employer" : user.role,
           isVerified: user.isVerified,
         },
       },

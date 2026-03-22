@@ -120,3 +120,65 @@ Respond ONLY in valid JSON (no markdown, no code fences):
   const text = await callGemini(prompt);
   return JSON.parse(text);
 }
+
+// ─── Generate Match Score ────────────────────────────────
+export async function generateMatchScore(
+  candidateProfile: any,
+  jobRoleDescription: string
+) {
+  const profileString = JSON.stringify({
+    skills: candidateProfile.skills,
+    experience: candidateProfile.experience?.map((e: any) => e.aiEnhanced),
+    projects: candidateProfile.projects?.map((p: any) => p.aiEnhanced),
+    summary: candidateProfile.summary,
+  });
+
+  const prompt = `You are an expert technical recruiter and hiring manager. Your job is to evaluate a candidate's profile against a target job role.
+
+Job Role Description: 
+"${jobRoleDescription}"
+
+Candidate Profile:
+${profileString}
+
+Calculate a match score from 0 to 100 representing how well the candidate fits the job.
+Identify up to 5 key strengths the candidate has for this specific role.
+Identify up to 5 missing skills or areas of concern.
+
+Respond ONLY in valid JSON format:
+{
+  "matchScore": 85,
+  "strengths": ["React", "System Design"],
+  "missingSkills": ["AWS", "Docker"]
+}`;
+
+  const text = await callGemini(prompt);
+  return JSON.parse(text);
+}
+
+// ─── Enhance Job Description ─────────────────────────────
+export async function enhanceJobDescription(
+  title: string,
+  rawDescription: string,
+  category: string
+) {
+  const prompt = `You are an expert technical recruiter and copywriter. A hiring manager has provided a draft job description for a "${title}" role in the "${category}" category.
+
+Your job is to:
+1. Rewrite the description to be professional, engaging, and well-structured.
+2. Ensure it highlights what makes the role exciting.
+3. Keep it concise (3-4 paragraphs max).
+4. Extract/Suggest a list of technical and soft skills required for this exact role.
+
+Draft description provided:
+"${rawDescription}"
+
+Respond ONLY in valid JSON format:
+{
+  "enhancedDescription": "...",
+  "suggestedSkills": ["skill1", "skill2", "skill3"]
+}`;
+
+  const text = await callGemini(prompt);
+  return JSON.parse(text);
+}

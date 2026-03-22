@@ -38,8 +38,12 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // Redirect based on role
+      if (data.user.role === "employer") {
+        router.push("/hr/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

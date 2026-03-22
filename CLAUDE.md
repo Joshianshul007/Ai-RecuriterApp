@@ -1,330 +1,261 @@
-# 🚀 AI Recruitment Platform — Dashboard Implementation Plan
+# 🚀 AI Recruitment Platform — Job Posting & Homepage Search Implementation Plan
 
 ---
 
-# 🎯 Overview
+# 🎯 Objective
 
-The dashboard is the core experience of the platform. It is divided into two main parts:
+Build a system where:
 
-1. 👤 Candidate Dashboard — Profile building with AI assistance  
-2. 🧑‍💼 Recruiter Dashboard — Candidate evaluation and comparison  
-
-The goal is to create an **AI-driven, intuitive, and efficient user experience**.
-
----
-
-# 👤 Candidate Dashboard
-
-## 🎯 Objective
-
-Enable users to:
-- Build their profile using AI
-- Track progress
-- Improve their profile quality
+- Recruiters can post new jobs  
+- Jobs are stored in the database  
+- Users can search jobs from the homepage  
+- Relevant jobs are displayed based on search filters  
 
 ---
 
-## 🧭 Layout Structure
+# 🧠 System Overview
 
-- Sidebar (Navigation)
-- Topbar (User info + progress + save status)
-- Main Content Area
+The system connects three core parts:
 
----
-
-## 📌 Sidebar Navigation
-
-- Dashboard
-- Build Profile
-- My Profile
-- Settings
+1. Job Creation (Recruiter)
+2. Job Storage (Database)
+3. Job Search & Display (User)
 
 ---
 
-## 🔝 Topbar
+# 🔄 End-to-End Flow
 
-- User Name
-- Profile Completion Progress (Progress Bar)
-- Auto-save Status ("Saved just now")
-
----
-
-## 🏠 Dashboard Home
-
-### Components
-
-### 1. Profile Completion Card
-- Shows completion percentage (e.g., 70%)
-- Displays missing sections:
-  - Add Projects
-  - Add Experience
-- CTA: **Complete Profile**
+Recruiter → Post Job → Save in Database  
+User → Search Job → Backend Filters → Show Jobs  
 
 ---
 
-### 2. AI Suggestions Card
-- Suggested Skills
-- Suggested Roles
+# 🧑‍💼 1. Recruiter Side — Post New Job
+
+## Step 1: Access Job Creation
+
+- Recruiter clicks “Post New Job” button from dashboard
+
+---
+
+## Step 2: Enter Job Details
+
+The form includes:
+
+- Job Title  
+- Company Name  
+- Location  
+- Category (e.g., Backend, Frontend)  
+- Required Skills  
+- Experience Level  
+- Job Description  
+
+---
+
+## Step 3: Submit Job
+
+### Backend Actions:
+
+- Validate input fields  
+- Convert skills into structured format  
+- Attach metadata:
+  - Created date  
+  - Recruiter ID  
+
+---
+
+## Step 4: Store Job
+
+- Save job as a structured document in database  
+- Ensure fields are searchable (title, location, category, skills)
+
+---
+
+## Step 5: Confirmation
+
+- Show success message  
+- Redirect or remain on dashboard  
+
+---
+
+# 💾 2. Job Storage Strategy
+
+Each job contains:
+
+## Core Fields
+- Title  
+- Company  
+- Location  
+- Category  
+- Description  
+
+## Searchable Fields
+- Skills  
+- Keywords (from title & description)  
+
+## Metadata
+- Created Date  
+- Recruiter ID  
+
+---
+
+# 🔍 3. Homepage Search System
+
+## UI Components (as per your design)
+
+- Job Title / Company input  
+- Location selector  
+- Category selector  
+- Search button  
+
+---
+
+## Step-by-Step Flow
+
+### Step 1: User Inputs Search Data
 
 Example:
-- Backend Developer
-- Machine Learning Engineer
+- Title: Backend  
+- Location: Delhi  
+- Category: IT  
 
 ---
 
-### 3. Recent Activity
-- Last updated section
-- Last AI-generated content
+### Step 2: Request Sent to Backend
+
+The system sends selected filters:
+- Title / keyword  
+- Location  
+- Category  
 
 ---
 
-### 4. Quick Actions
-- Add Project
-- Add Experience
-- Generate Summary
+### Step 3: Backend Filtering Logic
+
+System searches database using:
+
+- Title → partial match (keyword-based)  
+- Location → exact or partial match  
+- Category → exact match  
 
 ---
 
-# 🧠 AI Profile Builder (Core Feature)
+### Step 4: Retrieve Matching Jobs
 
-## 🎯 Objective
-
-Convert user input into structured professional data using AI
+- Backend returns a list of jobs that satisfy filters  
 
 ---
 
-## 🧭 Layout
+# 📄 4. Job Display System (Frontend)
 
-- Left: User Input Area
-- Right: AI Output Preview
+## After Search
 
----
-
-## 📝 Flow
-
-### Step 1: User Input
-User writes:
-"I built a finance extractor using AI"
+Jobs are displayed in a list format (cards)
 
 ---
 
-### Step 2: AI Processing
-System generates:
-- Structured bullet points
-- Extracted skills
+## Each Job Card Shows:
+
+- Job Title  
+- Company Name  
+- Location  
+- Skills (tags/chips)  
+- Short Description  
 
 ---
 
-### Step 3: User Actions
+## UI Behavior
 
-- Accept
-- Edit
-- Regenerate
-
----
-
-## 💡 Key UI Features
-
-### Skill Chips
-- Click to accept/remove skills
-
-### Progress Tracker
-- Projects ✔
-- Experience ❌
-- Skills ✔
+- Jobs appear below search bar  
+- Cards are scrollable  
+- Clean spacing and hierarchy  
 
 ---
 
-# 📄 Profile Preview Page
+# ⚡ 5. UX Enhancements (High Impact)
 
-## 🎯 Objective
-
-Display final structured profile (resume-like)
-
----
-
-## Sections
-
-- Summary
-- Skills
-- Projects
-- Experience
+## 🔥 Smart Suggestions
+- Suggest popular roles while typing  
 
 ---
 
-## Features
+## 🔥 Empty State Handling
+If no jobs found:
 
-- Edit sections
-- Download Resume (PDF)
-- Share Profile Link
-
----
-
-# 🧑‍💼 Recruiter Dashboard
-
-## 🎯 Objective
-
-Help recruiters:
-- Evaluate candidates quickly
-- Compare candidates efficiently
-- Shortlist best candidates
+- Show:
+  “No jobs found. Try different keywords.”
 
 ---
 
-## 🧭 Layout
-
-- Sidebar
-- Candidate List
-- Filters Panel
+## 🔥 Loading State
+- Show loader while fetching jobs  
 
 ---
 
-## 📋 Candidate List
-
-Each candidate card shows:
-- Name
-- Role
-- Top Skills
-- Match Score
-- Short Summary
+## 🔥 Highlight Matches
+- Highlight searched keyword in results  
 
 ---
 
-## 🎯 Filters Panel
+# 🤖 6. AI Integration (Optional but Powerful)
 
-- Skills filter
-- Experience level
-- Match score %
+## AI Enhancements
 
----
-
-# 📄 Candidate Profile View
-
-## Sections
-
-- Summary
-- Skills
-- Projects
-- Experience
+### Job Posting Side
+- Improve job description  
+- Suggest required skills  
 
 ---
 
-## 🔥 AI Insights Panel
-
-Displays:
-- Match Score (e.g., 85%)
-- Strengths
-- Missing Skills
+### Search Side
+- Semantic search (not just keywords)  
+- Match user profile with jobs  
 
 ---
 
-## Actions
+# 🔄 7. Complete User Journey
 
-- Shortlist
-- Reject
-- Add Notes
+## Recruiter
 
----
-
-# ⚖️ Compare Candidates Feature
-
-## 🎯 Objective
-
-Enable side-by-side comparison
+1. Click “Post Job”  
+2. Fill job details  
+3. Submit  
+4. Job stored in database  
 
 ---
 
-## Layout
+## User
 
-Candidate A | Candidate B
-
----
-
-## Comparison Table
-
-| Feature      | Candidate A | Candidate B |
-|-------------|------------|------------|
-| Skills      | ✔          | ✔          |
-| Experience  | ✔          | ❌         |
-| Match Score | 85%        | 72%        |
+1. Open homepage  
+2. Enter search filters  
+3. Click “Search Job”  
+4. View relevant job listings  
 
 ---
 
-# ⭐ Shortlist Dashboard
+# 🏆 Final Outcome
 
-## Features
+The system enables:
 
-- Saved candidates
-- Notes
-- Quick access cards
-
----
-
-# ⚡ Key Features Summary
-
-## Candidate Side
-
-- AI-assisted profile building
-- Skill suggestions
-- Auto-save
-- Progress tracking
+- Efficient job posting  
+- Fast job discovery  
+- Structured data management  
+- Scalable search functionality  
 
 ---
 
-## Recruiter Side
+# 🎯 Conclusion
 
-- Match score
-- Filters
-- Compare candidates
-- Shortlist system
+This implementation replaces traditional job boards with:
 
----
+- Structured job data  
+- Intelligent filtering  
+- Clean user experience  
 
-# 🧩 Component Breakdown
+Resulting in:
 
-Reusable components:
-
-- Sidebar.tsx
-- Topbar.tsx
-- ProgressBar.tsx
-- CandidateCard.tsx
-- SkillChip.tsx
-- AIOutputCard.tsx
-- CompareTable.tsx
-
----
-
-# 📅 Implementation Timeline
-
-## Day 1
-- Dashboard layout (Sidebar + Topbar)
-
-## Day 2
-- Candidate dashboard home
-
-## Day 3
-- AI Profile Builder
-
-## Day 4
-- Recruiter dashboard
-
-## Day 5
-- Compare feature + UI polish
-
----
-
-# 🏆 Conclusion
-
-The dashboard is designed to:
-
-- Replace resumes with structured profiles
-- Use AI for intelligent data processing
-- Improve recruiter efficiency
-- Provide a smooth and guided user experience
-
-This ensures:
-- Better hiring decisions
-- Better candidate representation
-- Faster recruitment workflow
+- Better job visibility  
+- Faster hiring process  
+- Improved user satisfaction  
 
 ---
